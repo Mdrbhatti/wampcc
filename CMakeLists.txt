@@ -29,8 +29,8 @@ option (BUILD_STATIC_LIBS "Use static libraries" ON)
 option (BUILD_EXAMPLES    "Build example apps"   ON)
 option (BUILD_UTILS       "Build utility apps"   ${DEFAULT_BUILD_UTILS})
 option (BUILD_TESTS       "Build test apps"      OFF)
-set(LIBUV_DIR   "" CACHE STRING "libuv installation directory")
-set(JANSSON_DIR "" CACHE STRING "Jansson installation directory")
+# set(LIBUV_DIR   "" CACHE STRING "libuv installation directory")
+# set(JANSSON_DIR "" CACHE STRING "Jansson installation directory")
 
 set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/bin" CACHE PATH "Installation directory for executables")
 set(INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib" CACHE PATH  "Installation directory for libraries")
@@ -42,8 +42,8 @@ set(INSTALL_PKGCONFIG_DIR "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" CACHE PATH "In
 ##
 include(PlatformCheck)
 include(CheckLibraryExists)
-find_package(PkgConfig)
-
+# find_package(PkgConfig)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 ##
 ## Compiler settings
 ##
@@ -61,75 +61,90 @@ endif()
 ##
 ## Try to find libssl
 ##
-if(CMAKE_HOST_UNIX)
-pkg_check_modules(SSL openssl REQUIRED)
-if(SSL_FOUND)
-  set(HAVE_SSL ON)
-endif()
-endif()
+# if(CMAKE_HOST_UNIX)
+# pkg_check_modules(SSL openssl REQUIRED)
+# if(SSL_FOUND)
+#   set(HAVE_SSL ON)
+# endif()
+# endif()
+find_package(OpenSSL REQUIRED)
 
 ##
 ## Try to find libuv
 ##
 
-if("${LIBUV_DIR}" STREQUAL "")
-  pkg_check_modules(LIBUV libuv>=1.8.0 REQUIRED)
-  if(LIBUV_FOUND)
-    set(HAVE_LIBUV ON)
-  endif()
-else() # LIBUV_DIR
-  # normalise user paths that we use for searching
-  file(TO_CMAKE_PATH ${LIBUV_DIR} LIBUV_DIR)
-  message(STATUS "Using user provided libuv")
+find_package(Libuv REQUIRED)
+find_package(Jansson REQUIRED)
+include_directories(${OPENSSL_INCLUDE_DIR})
+set(HAVE_JANSSON ON)
+set(HAVE_LIBUV ON)
+# link_directories(${INSTALL_LIB_DIR} ${LIBUV_DIR}/lib ${JANSSON_DIR}/lib)
+# if("${LIBUV_DIR}" STREQUAL "")
+#   pkg_check_modules(LIBUV libuv>=1.8.0 REQUIRED)
+#   if(LIBUV_FOUND)
+#     set(HAVE_LIBUV ON)
+#   endif()
+# else() # LIBUV_DIR
+#   # normalise user paths that we use for searching
+#   file(TO_CMAKE_PATH ${LIBUV_DIR} LIBUV_DIR)
+#   message(STATUS "Using user provided libuv")
 
-  if(CMAKE_HOST_UNIX)
-      set(LIBUV_FILE "uv")
-  else()
-      set(LIBUV_FILE "libuv")
-  endif()
-  set(LIBUV_INCLUDE_DIRS ${LIBUV_DIR}/include)
+#   if(CMAKE_HOST_UNIX)
+#       set(LIBUV_FILE "uv")
+#   else()
+#       set(LIBUV_FILE "libuv")
+#   endif()
+#   set(LIBUV_INCLUDE_DIRS ${LIBUV_DIR}/include)
 
-  check_library_exists(${LIBUV_FILE} uv_version ${LIBUV_DIR}/lib HAVE_LIBUV)
+#   check_library_exists(${LIBUV_FILE} uv_version ${LIBUV_DIR}/lib ${LIBUV_DIR}/Debug/lib HAVE_LIBUV)
 
-  if(NOT HAVE_LIBUV)
-    message(FATAL_ERROR "libuv not found")
-  endif()
+#   if(NOT HAVE_LIBUV)
+#     message(FATAL_ERROR "libuv not found")
+#   endif()
 
-  link_directories(${INSTALL_LIB_DIR} ${LIBUV_DIR}/lib)
-endif() # LIBUV_DIR
+#   link_directories(${INSTALL_LIB_DIR} ${LIBUV_DIR}/lib)
+# endif() # LIBUV_DIR
 
 ##
 ## Try to find jansson
 ##
 
-if("${JANSSON_DIR}" STREQUAL "")
-  message(STATUS "Using cmake package module to locate jansson")
-  pkg_check_modules(JANSSON jansson>=2.7 REQUIRED)
-  if(JANSSON_FOUND)
-    set(HAVE_JANSSON ON)
-  endif()
-else() # JANSSON_DIR
-  # normalise user paths that we use for searching
-  file(TO_CMAKE_PATH ${JANSSON_DIR} JANSSON_DIR)
-  message(STATUS "Using user provided jansson")
+# if("${JANSSON_DIR}" STREQUAL "")
+#   message(STATUS "Using cmake package module to locate jansson")
+#   pkg_check_modules(JANSSON jansson>=2.7 REQUIRED)
+#   if(JANSSON_FOUND)
+#     set(HAVE_JANSSON ON)
+#   endif()
+# else() # JANSSON_DIR
+#   # normalise user paths that we use for searching
+#   file(TO_CMAKE_PATH ${JANSSON_DIR} JANSSON_DIR)
+#   message(STATUS "Using user provided jansson")
 
-  # jansson has same name on linux & windows
-  set(JANSSON_FILE "jansson")
-  set(JANSSON_INCLUDE_DIRS ${JANSSON_DIR}/include)
+#   # jansson has same name on linux & windows
+#   set(JANSSON_FILE "jansson")
+#   set(JANSSON_INCLUDE_DIRS ${JANSSON_DIR}/include)
 
-  check_library_exists(${JANSSON_FILE} json_object ${JANSSON_DIR}/lib HAVE_JANSSON)
+#   check_library_exists(${JANSSON_FILE} json_object ${JANSSON_DIR}/lib HAVE_JANSSON)
 
-  if(NOT HAVE_JANSSON)
-    message(FATAL_ERROR "jansson not found")
-  endif()
+#   if(NOT HAVE_JANSSON)
+#     message(FATAL_ERROR "jansson not found")
+#   endif()
 
-  if(NOT "${LIBUV_DIR}" STREQUAL "")
-    link_directories(${INSTALL_LIB_DIR} ${LIBUV_DIR}/lib ${JANSSON_DIR}/lib)
-  else()
-    link_directories(${INSTALL_LIB_DIR} ${JANSSON_DIR}/lib)
-  endif()
-endif() # JANSSON_DIR
-
+#   if(NOT "${LIBUV_DIR}" STREQUAL "")
+#     link_directories(${INSTALL_LIB_DIR} ${LIBUV_DIR}/lib ${JANSSON_DIR}/lib)
+#   else()
+#     link_directories(${INSTALL_LIB_DIR} ${JANSSON_DIR}/lib)
+#   endif()
+# endif() # JANSSON_DIR
+message(STATUS "CMAKE_ROOT:               " ${CMAKE_ROOT})
+message(STATUS "CMAKE_INSTALL_PREFIX:     " ${CMAKE_INSTALL_PREFIX})
+message(STATUS "LIBUV_INCLUDE_DIRS:        " ${LIBUV_INCLUDE_DIR})
+message(STATUS "LIBUV_LIBRARIES:          " ${LIBUV_LIBRARIES})
+message(STATUS "JANSSON_INCLUDE_DIR:      " ${JANSSON_INCLUDE_DIR})
+message(STATUS "JANSSON_LIBRARY:          " ${JANSSON_LIBRARY})
+message(STATUS "JANSSON_VERSION:          " ${JANSSON_VERSION})
+message(STATUS "OpenSSL_INCLUDE_DIR:      " ${OPENSSL_INCLUDE_DIR})
+message(STATUS "OpenSSL_LIBRARIES:        " ${OPENSSL_LIBRARIES})
 # configure a header file to pass some of the CMake settings
 # to the source code
 configure_file (
