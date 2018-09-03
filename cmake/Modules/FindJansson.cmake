@@ -2,18 +2,17 @@
 #  JANSSON_FOUND        - System has jansson
 #  JANSSON_INCLUDE_DIRS - The jansson include directories
 #  JANSSON_LIBRARIES    - The libraries needed to use jansson
-# NOTE: JANSSON_ROOT should be set on windows
 
 find_package(PkgConfig QUIET)
 pkg_check_modules(PC_JANSSON QUIET jansson)
 
 find_path(JANSSON_INCLUDE_DIR
   NAMES jansson.h
-  HINTS ${PC_JANSSON_INCLUDE_DIRS} $ENV{JANSSON_ROOT}/include)
+  HINTS ${PC_JANSSON_INCLUDE_DIRS} ${JANSSON_DIR}/include)
 
 find_library(JANSSON_LIBRARY
   NAMES jansson jansson_d
-  HINTS ${PC_JANSSON_LIBRARY_DIRS} $ENV{JANSSON_ROOT}/lib)
+  HINTS ${PC_JANSSON_LIBRARY_DIRS} ${JANSSON_DIR}/lib)
 
 if(JANSSON_INCLUDE_DIR)
   set(_version_regex "^#define[ \t]+JANSSON_VERSION[ \t]+\"([^\"]+)\".*")
